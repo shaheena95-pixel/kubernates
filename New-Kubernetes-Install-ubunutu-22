@@ -1,0 +1,122 @@
+🚀 Kubernetes Cluster Setup (kubeadm – v1.29)
+
+OS: Ubuntu 22.04
+CRI: Docker
+CNI: Flannel
+
+🔹 PART 1 — MASTER NODE SETUP
+Step 1: Install Docker
+
+    sudo apt-get update -y
+    sudo apt-get install docker.io -y
+
+    docker --version
+
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    sudo systemctl status docker
+
+Step 2: Install Kubernetes packages (kubeadm, kubelet, kubectl)
+
+    sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+    sudo apt-get update
+    sudo apt-get install -y kubelet kubeadm kubectl
+    sudo apt-mark hold kubelet kubeadm kubectl
+
+Verify:
+    kubeadm version
+
+Step 3: Disable swap & enable required kernel modules
+    sudo swapoff -a
+    sudo modprobe overlay
+    sudo modprobe br_netfilter
+    sudo sysctl --system
+
+Step 4: Set hostname (Master)
+    sudo hostnamectl set-hostname master-node
+
+(Re-login optional but recommended)
+
+Step 5: Initialize Kubernetes Control Plane
+    sudo kubeadm init
+
+⚠️ IMPORTANT:
+Copy and save the kubeadm join ... command shown at the end — you’ll need it for worker nodes.
+
+Step 6: Configure kubectl access (for ubuntu user)
+    mkdir -p $HOME/.kube
+    sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Verify:
+    kubectl cluster-info
+    kubectl get nodes
+
+Expected:
+master-node   NotReady   control-plane
+
+👉 NotReady is NORMAL until CNI is installed.
+
+Step 7: Install Flannel CNI (Pod Network)
+    kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+    Wait ~30–60 seconds, then:
+    kubectl get nodes
+
+✅ Expected:
+master-node   Ready   control-plane
+
+#####🔹 PART 2 — WORKER NODE SETUP
+
+⚠️ Do NOT run kubeadm init on worker nodes
+
+Step 1: Install Docker (Worker)
+    sudo apt-get update -y
+    sudo apt-get install docker.io -y
+    sudo systemctl enable docker
+    sudo systemctl start docker
+
+Step 2: Install Kubernetes packages (Worker)
+    sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+    sudo apt-get update
+    sudo apt-get install -y kubelet kubeadm kubectl
+    sudo apt-mark hold kubelet kubeadm kubectl
+
+Step 3: Disable swap & enable kernel modules (Worker)
+   sudo swapoff -a
+   sudo modprobe overlay
+   sudo modprobe br_netfilter
+   sudo sysctl --system
+
+Step 4: Set hostname (Worker)
+   sudo hostnamectl set-hostname worker-node-1
+
+Step 5: Join the Worker Node to Cluster
+Run EXACT command copied from master, example:
+
+   sudo kubeadm join 172.31.21.178:6443 --token kx4yl1.wtngxlo61mjusizp --discovery-token-ca-cert-hash sha256:2521c9302a60464c77dc2ed3af4a524daa97240b85a98c1c12f576a5b18c26c6
+
+⏳ This may take 1–4 minutes.
+Do NOT interrupt.
+
+🔹 PART 3 — VERIFY FROM MASTER
+   kubectl get nodes
+
+✅ Expected final output:
+    master-node     Ready   control-plane
+    worker-node-1   Ready   <none>
+
+###################🎯 DEMO CHECKLIST (Quick)##############################
+
+✔ Ubuntu 22.04
+✔ Kubernetes v1.29
+✔ Docker runtime
+✔ Flannel networking
+✔ Master + Worker joined successfully
