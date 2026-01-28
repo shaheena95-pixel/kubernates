@@ -31,21 +31,19 @@ To start Docker if it’s not running:
 Step 1: Install Kubernetes
 *****************************************************************************************************************************************************
 
-	    sudo apt-get install curl -y
+	    ssudo apt-get install curl -y
 
-	    ## sudo apt-get install -y apt-transport-https ca-certificates curl gpg
-        sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+	    sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
-	    ## curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+	    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-	   #echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-       echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.35/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-	   
-       sudo apt-get update
+	   echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+	   sudo apt-get update
+
 	   sudo apt-get install -y kubelet kubeadm kubectl
 
-	   sudo apt-mark hold kubelet kubeadm kubectl - ➡️ It tells Ubuntu’s package manager (APT) to FREEZE these Kubernetes packages at their current versions.
+	   sudo apt-mark hold kubelet kubeadm kubectl
 
 	    kubeadm version
 
@@ -53,11 +51,10 @@ Make the system as Master node:
 
 	    sudo hostnamectl set-hostname master-node
 
-
 Initialize Kubernetes on Master:
 
 	    sudo kubeadm init 
-
+------------------------------------------------------------------------------------------------------------------------------------
 
 Once this command finishes, it will display a kubeadm join message at the end. Make a note of the whole entry. This will be used to join the worker nodes to the cluster.
 
@@ -78,7 +75,7 @@ Enter the following:
 	    kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 
 	    kubectl get pods --all-namespaces
-
+-------------------------------------------------------------------------------------------------------------------------------------------
 Worker Node Setup:
 
 	    sudo hostnamectl set-hostname worker01
