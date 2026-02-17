@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:1.7.9
+        image: nginx:1.28 # new version - nginx:1.29.3
         ports:
         - containerPort: 80
 -----------------------------------------------------------------------------------------------------------------------------------------------------------        
@@ -37,3 +37,4 @@ spec:
         image: nginx:1.7.9
         ports:
         - containerPort: 80
+
