@@ -25,7 +25,6 @@ spec:
     targetPort: 80   # iptables (created by kube-proxy) forwards to: PodIP:targetPort
 
 🔵 NodePort
-
 apiVersion: v1
 kind: Service
 metadata:
