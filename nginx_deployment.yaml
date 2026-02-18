@@ -173,9 +173,21 @@ spec:
 
 🔄 Service Switch
 Service initially points to blue:
-selector:
-  app: nginx
-  version: blue
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  labels:
+    app: nginx
+spec:
+  type: NodePort   # Change to LoadBalancer if using cloud
+  selector:
+    app: nginx
+    version: blue
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30007
 
 To switch to green:
 selector:
@@ -242,6 +254,7 @@ selector:
 1 canary
 ~20% traffic to new version
 It is simple round-robin / random distribution.
+
 
 
 
