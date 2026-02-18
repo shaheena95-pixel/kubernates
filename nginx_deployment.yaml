@@ -240,7 +240,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:1.29.3
+        image: nginx:1.29.3  # nginxdemos/hello:0.4-plain-text # image: nginxdemos/hello:latest
         ports:
         - containerPort: 80
 
@@ -265,6 +265,7 @@ spec:
 1 canary
 ~20% traffic to new version
 It is simple round-robin / random distribution.
+
 
 
 
