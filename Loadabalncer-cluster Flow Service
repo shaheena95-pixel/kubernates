@@ -1,0 +1,95 @@
+1️⃣ Frontend Deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: frontend:v1
+        env:
+        - name: BACKEND_URL
+          value: http://backend-service
+        ports:
+        - containerPort: 80
+
+2️⃣ Frontend Service (LoadBalancer)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+
+3️⃣ Backend Deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: backend:v1
+        ports:
+        - containerPort: 8080
+
+
+4️⃣ Backend Service (ClusterIP)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+  - port: 80
+    targetPort: 8080
+
+reference - How it works
+Frontend pod calls: http://backend-service
+Kubernetes DNS resolves it to: ClusterIP (10.x.x.x)
+Service forwards request to one of backend pods.
+Service DNS Format: - http://<service-name>
+Example - http://backend-service
+Full DNS Format (If Needed) - http://backend-service.<namespace>.svc.cluster.local
+Reference - http://backend-service.default.svc.cluster.local
+
+
+🔄 So The Flow Is
+Frontend Pod
+   ↓
+backend-service (ClusterIP)
+   ↓
+One of 3 Backend Pods
+
+
+
