@@ -1,0 +1,78 @@
+1️⃣ ROLE (Namespace-Level Permission)
+This Role allows reading Pods only inside default namespace.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+2️⃣ ROLEBINDING (Attach Role to User)
+This binds the above Role to a user named dev-user.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-reader-binding
+  namespace: default
+subjects:
+- kind: User
+  name: dev-user
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+🟠 What This Means
+dev-user can: kubectl get pods -n default
+But CANNOT: kubectl get pods -n kube-system
+Because Role works only in one namespace.
+
+3️⃣ CLUSTERROLE (Cluster-Level Permission)
+This ClusterRole allows reading Nodes (cluster-scoped resource).
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+
+4️⃣ CLUSTERROLEBINDING (Attach ClusterRole to User)
+This grants cluster-wide access to ops-user.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-reader-binding
+subjects:
+- kind: User
+  name: ops-user
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: node-reader
+  apiGroup: rbac.authorization.k8s.io
+
+🟠 What This Means
+ops-user can run: kubectl get nodes
+From anywhere. 
+Because: Nodes are cluster-scoped.
+
+🟠 Final Simple Comparison
+| Resource           | Scope                              |
+| ------------------ | ---------------------------------- |
+| Role               | One namespace                      |
+| RoleBinding        | Grants Role inside that namespace  |
+| ClusterRole        | Cluster-wide permission definition |
+| ClusterRoleBinding | Grants cluster-wide access         |
+
+
+
