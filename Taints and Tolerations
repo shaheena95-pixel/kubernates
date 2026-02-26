@@ -1,0 +1,34 @@
+🟢 Taints to teh Nodes
+
+kubectl taint nodes node1 key=value:NoSchedule
+kubectl taint nodes gpu-node gpu=true:NoSchedule
+
+
+
+🟢 Deployment YAML With Toleration
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-app
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gpu-app
+  template:
+    metadata:
+      labels:
+        app: gpu-app
+    spec:
+      tolerations:
+      - key: "gpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      containers:
+      - name: gpu-container
+        image: nginx:1.28
+        ports:
+        - containerPort: 80
