@@ -1,4 +1,4 @@
-Here is the base Deployment YAML you can use as reference.
+🟢 Here is the base Deployment YAML you can use as reference.
 
 apiVersion: apps/v1
 kind: Deployment
@@ -20,3 +20,129 @@ spec:
         image: nginx:1.28
         ports:
         - containerPort: 80
+------------------------------------------------------------------------------------------------
+1️⃣ NodeSelector Example
+Pod will run only on nodes having label gpu=true
+
+spec:
+  nodeSelector:
+    gpu: "true"
+  containers:
+  - name: gpu-container
+    image: nginx:1.28
+    ports:
+    - containerPort: 80
+
+Example node label: 
+kubectl label nodes node1 gpu=true
+Meaning :Pod → runs only on nodes with gpu=true
+------------------------------------------------------------------------------------------------
+2️⃣ Node Affinity Example
+More advanced node selection.
+
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: gpu
+            operator: In
+            values:
+            - "true"
+  containers:
+  - name: gpu-container
+    image: nginx:1.28
+    ports:
+    - containerPort: 80
+
+Meaning: 
+Pod must run on nodes with gpu=true
+Same behavior as NodeSelector but more flexible.
+------------------------------------------------------------------------------------------------
+3️⃣ Node Anti-Affinity (Avoid Certain Nodes)
+Example: Avoid GPU nodes
+
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: gpu
+            operator: NotIn
+            values:
+            - "true"
+  containers:
+  - name: gpu-container
+    image: nginx:1.28
+    ports:
+    - containerPort: 80
+
+Meaning:
+Pod will NOT run on nodes labeled gpu=true
+------------------------------------------------------------------------------------------------
+4️⃣ Pod Affinity (Pods Prefer Same Node)
+Example: run near another pod labeled app=database
+
+spec:
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - database
+        topologyKey: "kubernetes.io/hostname"
+  containers:
+  - name: gpu-container
+    image: nginx:1.28
+    ports:
+    - containerPort: 80
+
+Meaning: 
+This Pod will run on the same node
+where Pods with label app=database exist.
+------------------------------------------------------------------------------------------------
+5️⃣ Pod Anti-Affinity (Spread Pods Across Nodes)
+Example: ensure two replicas don't run on same node
+
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - gpu-app
+        topologyKey: "kubernetes.io/hostname"
+  containers:
+  - name: gpu-container
+    image: nginx:1.28
+    ports:
+    - containerPort: 80
+
+Meaning:
+Each replica will run on different nodes.
+Useful for:
+Databases
+Kafka
+Redis
+High availability workloads
+------------------------------------------------------------------------------------------------
+🎯 Quick Comparison
+| Feature            | What It Controls          |
+| ------------------ | ------------------------- |
+| NodeSelector       | Pod chooses specific node |
+| Node Affinity      | Advanced node selection   |
+| Node Anti-Affinity | Avoid specific nodes      |
+| Pod Affinity       | Place pods together       |
+| Pod Anti-Affinity  | Spread pods apart         |
+
+🟢 Very Important
+“NodeSelector and NodeAffinity control where Pods run.
+PodAffinity controls which Pods run together.”
