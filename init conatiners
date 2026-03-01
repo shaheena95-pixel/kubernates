@@ -22,8 +22,8 @@ spec:
         - sh
         - -c
         - |
-          echo "Waiting for MongoDB..."     # Print message to indicate the init container has started
-          until nc -z mongo 27017;          # Check if MongoDB service (mongo) is reachable on port 27017      # nc (netcat) tries to connect to the MongoDB port
+          echo "Waiting for MongoDB..."                    # Print message to indicate the init container has started
+          until nc -z mongo(service-name) 27017;          # Check if MongoDB service (mongo) is reachable on port 27017      # nc (netcat) tries to connect to the MongoDB port
           do
             echo "MongoDB not ready..."    # If connection fails, print message that DB is not ready
             sleep 5                        # Wait 5 seconds before trying again
