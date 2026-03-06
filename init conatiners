@@ -1,0 +1,67 @@
+# NEXT TOPIC — INIT CONTAINERS IN KUBERNETES
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: login-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: login
+  template:
+    metadata:
+      labels:
+        app: login
+    spec:
+
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for MongoDB..."                    # Print message to indicate the init container has started
+          until nc -z mongo(service-name) 27017;          # Check if MongoDB service (mongo) is reachable on port 27017      # nc (netcat) tries to connect to the MongoDB port
+          do
+            echo "MongoDB not ready..."    # If connection fails, print message that DB is not ready
+            sleep 5                        # Wait 5 seconds before trying again
+          done                             # Repeat the loop until MongoDB becomes reachable
+          echo "MongoDB is ready!"         # Repeat the loop until MongoDB becomes reachable
+
+      containers:
+      - name: login-app
+        image: nginx:1.28
+        ports:
+        - containerPort: 80
+
+---------------------------------------------------------------------------------------------------------------------------
+  What the Script is Doing (Simple Explanation)
+  Step-by-step flow:
+Init container starts
+↓
+Prints: Waiting for MongoDB
+↓
+Tries connecting to MongoDB service (mongo:27017)
+↓
+If DB not ready → wait 5 seconds → retry
+↓
+Loop continues until DB becomes reachable
+↓
+Once DB is reachable → print "MongoDB is ready"
+↓
+Init container exits (Completed)
+↓
+Main application container starts
+-------------------------------------------------------------------------------------------------------------------------
+ Key Command Used:  nc -z mongo 27017 
+ “Check if MongoDB service is accepting connections on port 27017.”
+ # “Check if MongoDB service is accepting connections on port 27017.”
+
+| Part    | Meaning                                       |
+| ------- | --------------------------------------------- |
+| `nc`    | Netcat tool used to test network connectivity |
+| `-z`    | Scan/check port without sending data          |
+| `mongo` | Kubernetes service name for MongoDB           |
+| `27017` | MongoDB default port                          |
